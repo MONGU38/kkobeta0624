@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>꼬꼬너 - 꼬리에 꼬리를 물어 찾은 너</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 50%, #ffd0dc 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 3px solid #ff69b4;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            font-size: 3rem;
+            color: #ff1493;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .app-subtitle {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .app-description {
+            background: #f8f9fa;
+            border: 2px solid #ff69b4;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .landing-section {
+            text-align: center;
+        }
+
+        .btn {
+            padding: 18px 35px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 20, 147, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-kakao {
+            background: #FEE500;
+            color: #000;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 서버 상태 */
+        .server-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+        }
+
+        /* 스텝 네비게이션 */
+        .step-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .step-item.active .step-number {
+            background: #ff1493;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        /* 로딩 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #ff1493;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 폼 스타일 */
+        .auth-form {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .category-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .category-card {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 20px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .category-card:hover {
+            border-color: #ff1493;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.2);
+        }
+
+        .category-card.selected {
+            border-color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+        }
+
+        .category-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff1493;
+        }
+
+        /* 알림 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 140px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <!-- 서버 상태 표시 -->
+    <div class="server-status" id="serverStatus">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">시뮬레이션 모드</span>
+    </div>
+    
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">매칭을 시작하고 있습니다...</div>
+            <div class="loading-subtext" id="loadingSubtext">잠시만 기다려주세요</div>
+        </div>
+    </div>
+
+    <!-- 알림 메시지 -->
+    <div class="notification" id="notification">
+        <div id="notificationText">알림 메시지</div>
+    </div>
+
+    <div class="app-container">
+        <div class="main-card">
+            <div class="app-header">
+                <h1 class="app-title">🔗 꼬꼬너</h1>
+                <p class="app-subtitle">꼬리에 꼬리를 물어 찾은 너</p>
+                <div class="app-description">
+                    <strong>AI 기반 스마트 매칭으로 소중한 인연을 찾아드립니다</strong><br><br>
+                    간단한 기억만으로도 OK! 이름이나 연락처가 없어도<br>
+                    어렴풋한 추억을 통해 그리운 사람을 찾을 수 있어요
+                </div>
+            </div>
+
+            <!-- 랜딩 페이지 -->
+            <div class="landing-section" id="landingSection">
+                <div style="text-align: center; margin-bottom: 50px;">
+                    <div style="font-size: 3.5rem; margin-bottom: 20px;">🔗</div>
+                    <h1 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
+                        소중한 인연을 다시 찾아드립니다
+                    </h1>
+                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 40px; line-height: 1.5;">
+                        이름을 몰라도, 연락처가 없어도 괜찮아요<br>
+                        작은 추억의 조각들로 그리운 사람을 찾아드려요
+                    </p>
+                    <button class="btn btn-primary" onclick="startMatching()">
+                        ✨ 인연 찾기 시작하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 스텝 네비게이션 -->
+            <div class="step-navigation hidden" id="stepNavigation">
+                <div class="step-item active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">로그인</div>
+                </div>
+                <div class="step-item" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">카테고리</div>
+                </div>
+                <div class="step-item" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">정보입력</div>
+                </div>
+                <div class="step-item" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">검토</div>
+                </div>
+                <div class="step-item" id="step5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">매칭</div>
+                </div>
+            </div>
+
+            <!-- 로그인 섹션 -->
+            <div class="login-section hidden" id="loginSection">
+                <div class="auth-form">
+                    <h3>간편 로그인으로 시작하세요</h3>
+                    <button class="btn btn-kakao" onclick="loginWithKakao()">
+                        💬 카카오로 시작하기
+                    </button>
+                    <div style="text-align: center; margin: 15px 0; color: #999;">또는</div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="form-input" id="phoneNumber" placeholder="휴대폰 번호 (010-1234-5678)" style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="loginWithPhone()">인증</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 카테고리 선택 -->
+            <div class="category-section hidden" id="categorySection">
+                <h2 class="section-title">어떤 인연을 찾고 계신가요?</h2>
+                <div class="category-grid">
+                    <div class="category-card" onclick="selectCategory('school')">
+                        <div class="category-icon">🎓</div>
+                        <div class="category-title">학교 동창</div>
+                    </div>
+                    <div class="category-card" onclick="selectCategory('work')">
+                        <div class="category-icon">💼</div>
+                        <div class="category-title">직장 동료</div>
+                    </div>
+                    <div class="category-card" onclick="selectCategory('social')">
+                        <div class="category-icon">🎉</div>
+                        <div class="category-title">모임/동호회</div>
+                    </div>
+                    <div class="category-card" onclick="selectCategory('other')">
+                        <div class="category-icon">❓</div>
+                        <div class="category-title">기타</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="goToMatching()">
+                        매칭 시작하기 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- 매칭 결과 -->
+            <div class="matching-results hidden" id="matchingResults">
+                <h2 class="section-title">🎉 매칭 완료!</h2>
+                <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">🎯</div>
+                    <h3 style="color: #ff1493; margin-bottom: 10px;">김** 님과 94% 매칭!</h3>
+                    <p style="color: #666; margin-bottom: 20px;">고등학교 동창으로 추정되며, 많은 공통점이 발견되었습니다</p>
+                    <button class="btn btn-primary" onclick="startChat()">
+                        💬 대화 시작하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 채팅 -->
+            <div class="chat-section hidden" id="chatSection">
+                <h2 class="section-title">💬 김** 님과의 대화</h2>
+                <div style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; min-height: 300px;">
+                    <div id="chatMessages">
+                        <div style="background: #f1f3f4; padding: 12px 18px; border-radius: 18px; max-width: 70%; margin-bottom: 10px;">
+                            안녕하세요! 매칭되어 반갑습니다 😊
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" class="form-input" id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="handleEnter(event)" style="flex: 1;">
+                    <button class="btn btn-primary" onclick="sendMessage()">전송</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 'landing';
+        let selectedCategory = null;
+
+        // 알림 메시지 표시
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 로딩 표시/숨김
+        function showLoading(text, subtext) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingSubtext').textContent = subtext;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // 섹션 전환
+        function switchToStep(stepName) {
+            const sections = ['landingSection', 'loginSection', 'categorySection', 'matchingResults', 'chatSection'];
+            sections.forEach(section => {
+                document.getElementById(section).classList.add('hidden');
+            });
+
+            if (stepName !== 'landing') {
+                document.getElementById('stepNavigation').classList.remove('hidden');
+                document.getElementById(stepName + 'Section').classList.remove('hidden');
+            } else {
+                document.getElementById('stepNavigation').classList.add('hidden');
+                document.getElementById('landingSection').classList.remove('hidden');
+            }
+
+            currentStep = stepName;
+        }
+
+        // 매칭 시작
+        function startMatching() {
+            switchToStep('login');
+        }
+
+        // 카카오 로그인
+        function loginWithKakao() {
+            showLoading('카카오 로그인 중...', '잠시만 기다려주세요');
+            
+            setTimeout(() => {
+                hideLoading();
+                showNotification('카카오 로그인 완료!');
+                switchToStep('category');
+            }, 2000);
+        }
+
+        // 휴대폰 로그인
+        function loginWithPhone() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            if (!phoneNumber) {
+                showNotification('휴대폰 번호를 입력해주세요', 'error');
+                return;
+            }
+            
+            showLoading('인증번호 전송 중...', '잠시만 기다려주세요');
+            
+            setTimeout(() => {
+                hideLoading();
+                showNotification('인증번호가 전송되었습니다');
+                switchToStep('category');
+            }, 2000);
+        }
+
+        // 카테고리 선택
+        function selectCategory(category) {
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            event.target.closest('.category-card').classList.add('selected');
+            selectedCategory = category;
+        }
+
+        // 매칭으로 이동
+        function goToMatching() {
+            if (!selectedCategory) {
+                showNotification('카테고리를 선택해주세요', 'error');
+                return;
+            }
+
+            showLoading('매칭 중입니다...', 'AI가 최적의 매치를 찾고 있어요');
+            
+            setTimeout(() => {
+                hideLoading();
+                switchToStep('matchingResults');
+            }, 3000);
+        }
+
+        // 채팅 시작
+        function startChat() {
+            switchToStep('chat');
+        }
+
+        // 메시지 전송
+        function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = 'background: linear-gradient(135deg, #ff1493, #ff69b4); color: white; padding: 12px 18px; border-radius: 18px; max-width: 70%; margin-left: auto; text-align: right; margin-bottom: 10px;';
+            messageDiv.textContent = message;
+            
+            chatMessages.appendChild(messageDiv);
+            chatInput.value = '';
+            
+            // 자동 응답
+            setTimeout(() => {
+                const responses = [
+                    '네, 맞아요! 정말 오랜만이네요',
+                    '그때 정말 재미있었죠 ㅎㅎ',
+                    '어떻게 지내셨어요?',
+                    '정말 신기해요! 이렇게 다시 만나다니'
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                
+                const responseDiv = document.createElement('div');
+                responseDiv.style.cssText = 'background: #f1f3f4; color: #333; padding: 12px 18px; border-radius: 18px; max-width: 70%; margin-bottom: 10px;';
+                responseDiv.textContent = randomResponse;
+                
+                chatMessages.appendChild(responseDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000 + Math.random() * 2000);
+        }
+
+        // 엔터키 처리
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
